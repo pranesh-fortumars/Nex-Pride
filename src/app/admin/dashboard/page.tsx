@@ -221,6 +221,10 @@ export default function AdminDashboard() {
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [selectedJob, setSelectedJob] = useState<any>(null);
 
+  const [jobToArchive, setJobToArchive] = useState<any>(null);
+  const [archiveReason, setArchiveReason] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const selectedJobEmployer = useMemo(() => {
     if (!selectedJob || !liveUsers) return null;
     return liveUsers.find(u => u.uid === selectedJob.employerId || u.id === selectedJob.employerId);
@@ -688,6 +692,37 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCloseJob = async (job: any) => {
+    setIsProcessing(true);
+    try {
+      await updateDoc(doc(db, "Jobs", job.id), { status: 'closed', updatedAt: serverTimestamp() });
+      toast({ title: "Job marked as closed." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to close job" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleArchiveJobSubmit = async () => {
+    if (!jobToArchive) return;
+    if (!archiveReason) {
+      toast({ variant: "destructive", title: "Reason Required" });
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await updateDoc(doc(db, "Jobs", jobToArchive.id), { status: 'archived', archiveReason, updatedAt: serverTimestamp() });
+      toast({ title: "Job archived." });
+      setJobToArchive(null);
+      setArchiveReason("");
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to archive job" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
@@ -1004,12 +1039,22 @@ export default function AdminDashboard() {
                           </TableCell>
                           <TableCell className="text-sm font-bold text-primary">{j.companyName}</TableCell>
                           <TableCell>
-                            <Badge className={cn(
-                              "font-bold border-none",
-                              j.status === 'approved' ? "bg-green-100 text-green-700" : j.status === 'pending' ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
-                            )}>
-                              {j.status?.toUpperCase()}
-                            </Badge>
+                            <div className="flex flex-col gap-1 items-start">
+                              <Badge className={cn(
+                                "font-bold border-none",
+                                j.status === 'approved' ? "bg-green-100 text-green-700" : 
+                                j.status === 'pending' ? "bg-amber-100 text-amber-700" : 
+                                j.status === 'closed' || j.status === 'archived' ? "bg-slate-200 text-slate-700" :
+                                "bg-red-100 text-red-700"
+                              )}>
+                                {j.status?.toUpperCase()}
+                              </Badge>
+                              {j.status === 'archived' && j.archiveReason && (
+                                <div className="text-[10px] text-muted-foreground truncate max-w-[150px]" title={j.archiveReason}>
+                                  {j.archiveReason}
+                                </div>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>
                              <div className="flex items-center gap-2">
@@ -1020,9 +1065,33 @@ export default function AdminDashboard() {
                              </div>
                           </TableCell>
                           <TableCell className="text-right p-5">
-                             <Button variant="outline" size="sm" className="rounded-xl font-bold" onClick={() => router.push(`/jobs/${j.id}`)}>
-                               View Post
-                             </Button>
+                             <div className="flex items-center justify-end gap-2">
+                               <Button variant="outline" size="sm" className="rounded-xl font-bold h-9" onClick={() => router.push(`/jobs/${j.id}`)}>
+                                 View Post
+                               </Button>
+                               {j.status === 'approved' && (
+                                 <>
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm" 
+                                     className="font-bold border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all rounded-lg h-9"
+                                     onClick={() => handleCloseJob(j)}
+                                     disabled={isProcessing}
+                                   >
+                                     Close
+                                   </Button>
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm" 
+                                     className="font-bold border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 transition-all rounded-lg h-9"
+                                     onClick={() => setJobToArchive(j)}
+                                     disabled={isProcessing}
+                                   >
+                                     Archive
+                                   </Button>
+                                 </>
+                               )}
+                             </div>
                           </TableCell>
                         </TableRow>
                       ))
@@ -2166,19 +2235,71 @@ export default function AdminDashboard() {
 
       {/* Confirmation Alerts */}
       <AlertDialog open={!!confirmAction} onOpenChange={(o) => !o && setConfirmAction(null)}>
-        <AlertDialogContent className="rounded-[2rem] border-none shadow-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl font-black font-headline tracking-tight">Confirm {confirmAction?.label}?</AlertDialogTitle>
-            <AlertDialogDescription className="text-base font-medium">
-              Are you sure you want to perform this action for <strong>{confirmAction?.targetName || 'this record'}</strong>? 
+        <AlertDialogContent className="rounded-3xl border-none shadow-2xl overflow-hidden max-w-sm p-0">
+          <AlertDialogHeader className="p-6 bg-primary text-white text-left">
+            <AlertDialogTitle className="font-headline flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5" /> 
+              {confirmAction?.type === 'delete' ? 'Delete Record' : 
+               confirmAction?.type === 'dismiss' ? 'Dismiss Report' : 
+               'Change Status'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/80 font-medium">
+              Are you sure you want to {confirmAction?.type === 'delete' ? 'delete this record' : confirmAction?.type === 'dismiss' ? 'dismiss this report' : `mark as ${confirmAction?.label}`}? 
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel className="rounded-xl font-bold h-12 flex-1">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={executeAction} className={cn("rounded-xl font-black h-12 flex-1 shadow-lg", confirmAction?.type === 'rejected' || confirmAction?.type === 'delete' ? "bg-destructive text-white" : "bg-primary text-white")}>Yes, Confirm</AlertDialogAction>
+          <AlertDialogFooter className="p-4 bg-muted/30">
+            <AlertDialogCancel className="rounded-xl border-primary/20 text-primary hover:bg-primary/5 font-bold h-11 w-full m-0">Cancel Action</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={executeAction} 
+              className={cn(
+                "rounded-xl font-bold text-white shadow-lg h-11 w-full ml-2",
+                confirmAction?.type === 'delete' || confirmAction?.type === 'rejected' || confirmAction?.type === 'suspended' ? 'bg-red-500 hover:bg-red-600' : 
+                'bg-primary hover:bg-primary/90'
+              )}
+            >
+              Confirm Update
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Archive Job Modal */}
+      <Dialog open={!!jobToArchive} onOpenChange={(o) => !o && setJobToArchive(null)}>
+        <DialogContent className="max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden">
+           <DialogHeader className="p-6 bg-amber-500 text-white text-left">
+              <div className="flex items-center gap-3 mb-2">
+                 <AlertTriangle className="w-6 h-6" />
+                 <DialogTitle className="text-xl font-black uppercase tracking-tight">Archive Job</DialogTitle>
+              </div>
+              <DialogDescription className="text-white/90 font-medium">
+                 Are you sure you want to archive "{jobToArchive?.jobTitle}"? Please provide a reason for archiving this job.
+              </DialogDescription>
+           </DialogHeader>
+           <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                 <Label className="font-bold text-xs uppercase text-muted-foreground">Reason for Archiving</Label>
+                 <Textarea 
+                    value={archiveReason}
+                    onChange={(e) => setArchiveReason(e.target.value)}
+                    placeholder="e.g. Violation of terms, filled offline, duplicate, etc."
+                    className="min-h-[100px] rounded-xl border-slate-200"
+                    maxLength={200}
+                 />
+              </div>
+           </div>
+           <DialogFooter className="p-6 bg-slate-50 border-t flex gap-3">
+              <Button variant="ghost" onClick={() => setJobToArchive(null)} className="flex-1 font-bold rounded-xl h-12">Cancel</Button>
+              <Button 
+                disabled={isProcessing || !archiveReason} 
+                onClick={handleArchiveJobSubmit} 
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl h-12 shadow-md"
+              >
+                 {isProcessing ? "Archiving..." : "Archive Job"}
+              </Button>
+           </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

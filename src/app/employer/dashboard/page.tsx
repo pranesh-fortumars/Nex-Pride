@@ -88,6 +88,10 @@ export default function EmployerDashboard() {
   const [reportScreenshot, setReportScreenshot] = useState("");
   const [reporting, setReporting] = useState(false);
 
+  // Job Status Action States
+  const [jobToArchive, setJobToArchive] = useState<any>(null);
+  const [archiveReason, setArchiveReason] = useState("");
+
   const { user, isLoading: authLoading } = useUser();
   const profileRef = useMemo(() => user ? doc(db, "Users", user.uid) : null, [db, user]);
   const { data: userProfile, loading: profileLoading } = useDoc<any>(profileRef);
@@ -273,12 +277,49 @@ export default function EmployerDashboard() {
     toast({ title: "Notifications cleared" });
   };
 
-  const getStatusBadge = (status: string) => {
+  const handleCloseJob = async (job: any) => {
+    setIsProcessing(true);
+    try {
+      await updateDoc(doc(db, "Jobs", job.id), { status: 'closed' });
+      toast({ title: "Job marked as closed." });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to close job" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleArchiveJobSubmit = async () => {
+    if (!jobToArchive) return;
+    if (!archiveReason) {
+      toast({ variant: "destructive", title: "Reason Required" });
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await updateDoc(doc(db, "Jobs", jobToArchive.id), { status: 'archived', archiveReason });
+      toast({ title: "Job archived." });
+      setJobToArchive(null);
+      setArchiveReason("");
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Failed to archive job" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const getStatusBadge = (status: string, reason?: string) => {
     switch (status) {
       case 'approved': return <Badge className="bg-green-100 text-green-700 font-bold border-none">Approved</Badge>;
       case 'pending': return <Badge className="bg-amber-100 text-amber-700 font-bold border-none">Pending Approval</Badge>;
       case 'rejected': return <Badge className="bg-red-100 text-red-700 font-bold border-none">Rejected</Badge>;
       case 'closed': return <Badge variant="secondary">Closed</Badge>;
+      case 'archived': return (
+        <div className="flex flex-col gap-1 items-start">
+          <Badge variant="secondary" className="bg-slate-200 text-slate-700 border-none">Archived</Badge>
+          {reason && <span className="text-[10px] text-muted-foreground max-w-[120px] truncate" title={reason}>Reason: {reason}</span>}
+        </div>
+      );
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
@@ -593,7 +634,7 @@ export default function EmployerDashboard() {
                     liveJobs.map((job) => (
                       <TableRow key={job.id} className="hover:bg-primary/5 border-muted/30">
                         <TableCell className="px-8 py-6 font-black text-lg">{job.jobTitle}</TableCell>
-                        <TableCell className="py-6">{getStatusBadge(job.status)}</TableCell>
+                        <TableCell className="py-6">{getStatusBadge(job.status, job.archiveReason)}</TableCell>
                         <TableCell className="text-right px-8 py-6">
                            <div className="flex items-center justify-end gap-3">
                             <span className="font-black text-primary text-2xl">{job.views || 0}</span>
@@ -606,6 +647,28 @@ export default function EmployerDashboard() {
                             >
                               <BarChart3 className="w-5 h-5" />
                             </Button>
+                            {job.status === 'approved' && (
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="font-bold border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all rounded-lg h-9"
+                                  onClick={() => handleCloseJob(job)}
+                                  disabled={isProcessing}
+                                >
+                                  Close
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="font-bold border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 transition-all rounded-lg h-9"
+                                  onClick={() => setJobToArchive(job)}
+                                  disabled={isProcessing}
+                                >
+                                  Archive
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -618,6 +681,43 @@ export default function EmployerDashboard() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Archive Job Modal */}
+      <Dialog open={!!jobToArchive} onOpenChange={(o) => !o && setJobToArchive(null)}>
+        <DialogContent className="max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden">
+           <DialogHeader className="p-6 bg-amber-500 text-white text-left">
+              <div className="flex items-center gap-3 mb-2">
+                 <AlertTriangle className="w-6 h-6" />
+                 <DialogTitle className="text-xl font-black uppercase tracking-tight">Archive Job</DialogTitle>
+              </div>
+              <DialogDescription className="text-white/90 font-medium">
+                 Are you sure you want to archive "{jobToArchive?.jobTitle}"? Please provide a reason for archiving this job.
+              </DialogDescription>
+           </DialogHeader>
+           <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                 <Label className="font-bold text-xs uppercase text-muted-foreground">Reason for Archiving</Label>
+                 <Textarea 
+                    value={archiveReason}
+                    onChange={(e) => setArchiveReason(e.target.value)}
+                    placeholder="e.g. Position filled offline, project cancelled, etc."
+                    className="min-h-[100px] rounded-xl border-slate-200"
+                    maxLength={200}
+                 />
+              </div>
+           </div>
+           <DialogFooter className="p-6 bg-slate-50 border-t flex gap-3">
+              <Button variant="ghost" onClick={() => setJobToArchive(null)} className="flex-1 font-bold rounded-xl h-12">Cancel</Button>
+              <Button 
+                disabled={isProcessing || !archiveReason} 
+                onClick={handleArchiveJobSubmit} 
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl h-12 shadow-md"
+              >
+                 {isProcessing ? "Archiving..." : "Archive Job"}
+              </Button>
+           </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Audience Analysis Modal */}
       <Dialog open={!!viewingJobStats} onOpenChange={(o) => !o && setViewingJobStats(null)}>

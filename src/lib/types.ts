@@ -120,7 +120,7 @@ export interface JobListing {
   shiftTiming: string;
   workType: WorkType;
   description: string;
-  status: 'pending' | 'approved' | 'rejected' | 'closed';
+  status: 'pending' | 'approved' | 'rejected' | 'closed' | 'archived';
   createdAt: string;
   gstNumber?: string;
   factoryPhotoUrl?: string;
@@ -130,6 +130,7 @@ export interface JobListing {
   // New seeker experience fields
   distance?: number; 
   payoutSchedule: string; 
+  archiveReason?: string;
   benefits: {
     esi: boolean;
     epf: boolean;
