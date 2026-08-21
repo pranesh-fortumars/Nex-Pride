@@ -1,0 +1,29 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "garment-factory",
+      "description": "Tirupur Garment Factory Interior",
+      "imageUrl": "https://picsum.photos/seed/factory1/800/600",
+      "imageHint": "garment factory"
+    },
+    {
+      "id": "tailor-working",
+      "description": "Tailor working on a sewing machine",
+      "imageUrl": "https://picsum.photos/seed/tailor1/800/600",
+      "imageHint": "sewing machine"
+    },
+    {
+      "id": "textile-rolls",
+      "description": "Colorful textile rolls",
+      "imageUrl": "https://picsum.photos/seed/textile1/800/600",
+      "imageHint": "textile fabric"
+    },
+    {
+      "id": "user-avatar-1",
+      "description": "Portrait of a worker",
+      "imageUrl": "https://picsum.photos/seed/worker1/200/200",
+      "imageHint": "portrait worker"
+    }
+  ]
+}

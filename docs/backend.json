@@ -1,0 +1,137 @@
+
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Base user profile for all roles.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["job_seeker", "employer", "admin"] },
+        "name": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "onboarded": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" },
+        "photo": { "type": "string" },
+        "gst": { "type": "string" },
+        "category": { "type": "string" },
+        "designation": { "type": "string" },
+        "department": { "type": "string" }
+      },
+      "required": ["uid", "role"]
+    },
+    "Job": {
+      "title": "Job Listing",
+      "description": "A job posted by an employer.",
+      "type": "object",
+      "properties": {
+        "jobId": { "type": "string" },
+        "employerId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "category": { "type": "string" },
+        "department": { "type": "string" },
+        "designation": { "type": "string" },
+        "salaryMin": { "type": "number" },
+        "salaryMax": { "type": "number" },
+        "location": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "closed"] },
+        "interviewStartDate": { "type": "string", "format": "date-time" },
+        "interviewEndDate": { "type": "string", "format": "date-time" },
+        "interviewTimings": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "views": { "type": "number" }
+      }
+    },
+    "AdminNotification": {
+      "title": "Admin Notification",
+      "description": "Alerts for administrators regarding platform activity.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "targetId": { "type": "string" },
+        "status": { "type": "string", "enum": ["unread", "read"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "UserNotification": {
+      "title": "User Notification",
+      "description": "Alerts for job seekers regarding their application status.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["unread", "read"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Report": {
+      "title": "Incident Report",
+      "description": "User or company complaint.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetName": { "type": "string" },
+        "targetType": { "type": "string" },
+        "reason": { "type": "string" },
+        "reportedById": { "type": "string" },
+        "reportedByName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Payment": {
+      "title": "Payment Record",
+      "description": "Subscription or credit purchase transaction.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "employerId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "planType": { "type": "string" },
+        "amount": { "type": "number" },
+        "paymentStatus": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["phone", "password"]
+  },
+  "firestore": {
+    "/Users/{userId}": {
+      "schema": "#/entities/User",
+      "description": "User profiles"
+    },
+    "/Jobs/{jobId}": {
+      "schema": "#/entities/Job",
+      "description": "Job listings"
+    },
+    "/AdminNotifications/{id}": {
+      "schema": "#/entities/AdminNotification",
+      "description": "Notifications for super admins"
+    },
+    "/UserNotifications/{id}": {
+      "schema": "#/entities/UserNotification",
+      "description": "Status alerts for job seekers"
+    },
+    "/Reports/{id}": {
+      "schema": "#/entities/Report",
+      "description": "Platform incident reports"
+    },
+    "/Payments/{id}": {
+      "schema": "#/entities/Payment",
+      "description": "Platform revenue and company dues"
+    }
+  }
+}

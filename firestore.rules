@@ -1,0 +1,137 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/Users/$(request.auth.uid)) &&
+             (getUserData().role == 'admin' || getUserData().role == 'superadmin');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // User profiles
+    match /Users/{userId} {
+      allow get: if true;
+      // Public list & count/aggregation queries for stats (homepage & dashboards)
+      allow list: if true;
+      allow write: if isOwner(userId) || isAdmin();
+    }
+    
+    // Job listings
+    match /Jobs/{jobId} {
+      allow list: if true;
+      allow get: if (resource == null) || 
+                     (resource.data.status == 'approved') || 
+                     (isSignedIn() && (resource.data.employerId == request.auth.uid || isAdmin()));
+      allow create: if isSignedIn();
+      allow update: if (isSignedIn() && (resource.data.employerId == request.auth.uid || isAdmin())) 
+                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']));
+      allow delete: if (isSignedIn() && (resource.data.employerId == request.auth.uid || isAdmin()));
+
+      // Job Views Subcollection
+      match /Views/{viewId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+      }
+    }
+
+    // Company Entrance Profiles
+    match /CompanyEntranceProfile/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // Admin Notifications
+    match /AdminNotifications/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // User Notifications (Seeker Status Alerts)
+    match /UserNotifications/{id} {
+      allow read: if isSignedIn();
+      allow update: if isSignedIn();
+      allow create: if isSignedIn();
+      allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Applications
+    match /Applications/{appId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.jobSeekerId == request.auth.uid;
+      allow update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Reports (uppercase)
+    match /Reports/{reportId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // reports (lowercase)
+    match /reports/{reportId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // notifications (lowercase)
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
+    }
+
+    // companies
+    match /companies/{companyId} {
+      allow read: if true;
+      allow write: if isOwner(companyId) || isAdmin();
+      
+      match /photos/{photoId} {
+        allow read: if true;
+        allow write: if isOwner(companyId) || isAdmin();
+      }
+    }
+
+    // Payments
+    match /Payments/{paymentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // Master Data / Designations
+    match /Designations/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // System Configuration
+    match /SystemConfig/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Profile Change Requests (employer profile edit re-review)
+    match /ProfileChangeRequests/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+  }
+}
+
