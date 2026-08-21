@@ -455,6 +455,10 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                     <Button disabled className="h-14 px-8 bg-emerald-500 text-white font-bold text-lg rounded-xl flex items-center gap-2 shadow-lg">
                       <CheckCircle2 className="w-6 h-6" /> {t.alreadyApplied}
                     </Button>
+                  ) : job.status === 'closed' || job.status === 'archived' ? (
+                    <Button disabled className="h-14 px-8 bg-slate-200 text-slate-500 font-bold text-lg rounded-xl flex items-center gap-2 shadow-sm">
+                      <Lock className="w-6 h-6" /> Job Closed
+                    </Button>
                   ) : (
                     <Button disabled={applying || job.status !== 'approved'} onClick={handleApply} className="h-14 px-8 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-lg rounded-xl shadow-[0_8px_20px_-8px_rgba(124,58,237,0.5)] flex items-center gap-2 transition-all hover:-translate-y-0.5">
                       {applying ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Express Interest <ArrowRight className="w-5 h-5" /></>}
@@ -644,6 +648,10 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                        {applied ? (
                           <Button disabled className="w-full h-14 bg-emerald-500 text-white font-bold text-lg rounded-xl shadow-md">
                              <CheckCircle2 className="w-6 h-6 mr-2" /> Applied
+                          </Button>
+                       ) : job.status === 'closed' || job.status === 'archived' ? (
+                          <Button disabled className="w-full h-14 bg-slate-200 text-slate-500 font-bold text-lg rounded-xl shadow-sm flex justify-center items-center">
+                             <Lock className="w-5 h-5 mr-2" /> Job Closed
                           </Button>
                        ) : (
                           <Button disabled={applying || job.status !== 'approved'} onClick={handleApply} className="w-full h-14 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#7C3AED]/20 transition-all hover:-translate-y-0.5">
