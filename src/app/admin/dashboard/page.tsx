@@ -116,6 +116,9 @@ import { FirestorePermissionError } from "@/firebase/errors";
 import { format, isValid } from "date-fns";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { initializeApp, deleteApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { firebaseConfig } from "@/firebase/config";
 
 const DEPARTMENTS = {
   Staff: [
@@ -248,6 +251,80 @@ export default function AdminDashboard() {
   const [supportAddress, setSupportAddress] = useState("");
   const [supportHours, setSupportHours] = useState("");
   const supportRef = useMemo(() => canQuery ? doc(db, "SystemConfig", "supportConfig") : null, [db, canQuery]);
+
+  const [adminProfileData, setAdminProfileData] = useState({ name: "", dob: "" });
+  const [newAdminData, setNewAdminData] = useState({ name: "", email: "", password: "", dob: "" });
+  const [isAdminCreating, setIsAdminCreating] = useState(false);
+
+  useEffect(() => {
+    if (userProfile) {
+      setAdminProfileData({
+        name: userProfile.name || "",
+        dob: userProfile.dob || ""
+      });
+    }
+  }, [userProfile]);
+
+  const handleUpdateAdminProfile = async () => {
+    if (!profileRef) return;
+    try {
+      setIsProcessing(true);
+      await updateDoc(profileRef, {
+        name: adminProfileData.name,
+        dob: adminProfileData.dob,
+        updatedAt: serverTimestamp()
+      });
+      toast({ title: "Profile Updated Successfully" });
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error updating profile", description: err.message });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCreateSuperAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminData.name || !newAdminData.email || !newAdminData.password || !newAdminData.dob) {
+      toast({ variant: "destructive", title: "Missing fields" });
+      return;
+    }
+    if (newAdminData.password.length < 6) {
+      toast({ variant: "destructive", title: "Weak password", description: "Password must be at least 6 characters" });
+      return;
+    }
+    setIsAdminCreating(true);
+    let tempApp = null;
+    try {
+      tempApp = initializeApp(firebaseConfig, "TempAdminApp");
+      const tempAuth = getAuth(tempApp);
+      
+      const userCred = await createUserWithEmailAndPassword(tempAuth, newAdminData.email, newAdminData.password);
+      const newUid = userCred.user.uid;
+
+      await setDoc(doc(db, "Users", newUid), {
+        uid: newUid,
+        name: newAdminData.name,
+        email: newAdminData.email,
+        role: "admin",
+        dob: newAdminData.dob,
+        status: "approved",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        onboarded: true
+      });
+
+      toast({ title: "Super Admin Created Successfully!" });
+      setNewAdminData({ name: "", email: "", password: "", dob: "" });
+    } catch (err: any) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Error creating admin", description: err.message });
+    } finally {
+      if (tempApp) {
+        await deleteApp(tempApp);
+      }
+      setIsAdminCreating(false);
+    }
+  };
   const { data: supportConfigData } = useDoc<any>(supportRef);
   
   useEffect(() => {
@@ -966,6 +1043,8 @@ export default function AdminDashboard() {
               <TabsTrigger value="dues" className="px-6 font-bold h-12 shrink-0">Upcoming Dues</TabsTrigger>
               <TabsTrigger value="designations" className="px-6 font-bold h-12 shrink-0">Designations</TabsTrigger>
               <TabsTrigger value="settings" className="px-6 font-bold h-12 shrink-0">Settings</TabsTrigger>
+              <TabsTrigger value="profile" className="px-6 font-bold h-12 shrink-0">My Profile</TabsTrigger>
+              <TabsTrigger value="manage-admins" className="px-6 font-bold h-12 shrink-0">Manage Admins</TabsTrigger>
             </TabsList>
             
             <TabsContent value="jobs-queue" className="mt-6">
@@ -1497,6 +1576,114 @@ export default function AdminDashboard() {
                      </div>
                      <Button className="h-12 rounded-xl bg-primary text-white font-bold w-40 shadow-lg" onClick={saveSupportConfig}>Save Settings</Button>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="profile" className="mt-6">
+              <Card className="rounded-[2.5rem] overflow-hidden border-none shadow-xl bg-white max-w-2xl mx-auto">
+                <CardHeader className="bg-primary/5 text-center p-8">
+                  <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                    <UserIcon className="w-8 h-8" />
+                  </div>
+                  <CardTitle className="text-2xl font-black text-primary">My Profile</CardTitle>
+                  <CardDescription className="font-bold text-slate-500 mt-1">Manage your administrator account details</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <form onSubmit={(e) => { e.preventDefault(); handleUpdateAdminProfile(); }} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Email Address (Read Only)</Label>
+                      <Input value={userProfile?.email || ""} disabled className="h-14 rounded-2xl bg-slate-50 font-bold" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Role</Label>
+                      <Input value={userProfile?.role === "superadmin" ? "Super Admin" : "Admin"} disabled className="h-14 rounded-2xl bg-slate-50 font-bold capitalize" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Full Name</Label>
+                      <Input 
+                        value={adminProfileData.name}
+                        onChange={(e) => setAdminProfileData({...adminProfileData, name: e.target.value})}
+                        className="h-14 rounded-2xl font-bold" 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Date of Birth</Label>
+                      <Input 
+                        type="date"
+                        value={adminProfileData.dob ? new Date(adminProfileData.dob).toISOString().split('T')[0] : ""}
+                        onChange={(e) => setAdminProfileData({...adminProfileData, dob: e.target.value})}
+                        className="h-14 rounded-2xl font-bold" 
+                      />
+                    </div>
+                    <Button type="submit" disabled={isProcessing} className="w-full h-14 bg-primary text-white font-black rounded-2xl shadow-lg mt-4">
+                      {isProcessing ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle2 className="w-5 h-5 mr-2" />}
+                      {isProcessing ? "Saving..." : "Save Profile"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="manage-admins" className="mt-6">
+              <Card className="rounded-[2.5rem] overflow-hidden border-none shadow-xl bg-white max-w-2xl mx-auto">
+                <CardHeader className="bg-destructive/5 text-center p-8">
+                  <div className="w-16 h-16 bg-destructive rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                    <ShieldAlert className="w-8 h-8" />
+                  </div>
+                  <CardTitle className="text-2xl font-black text-destructive">Add Super Admin</CardTitle>
+                  <CardDescription className="font-bold text-slate-500 mt-1">Create a new administrator account</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <form onSubmit={handleCreateSuperAdmin} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Full Name</Label>
+                      <Input 
+                        value={newAdminData.name}
+                        onChange={(e) => setNewAdminData({...newAdminData, name: e.target.value})}
+                        placeholder="John Doe"
+                        className="h-14 rounded-2xl font-bold" 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Email Address</Label>
+                      <Input 
+                        type="email"
+                        value={newAdminData.email}
+                        onChange={(e) => setNewAdminData({...newAdminData, email: e.target.value})}
+                        placeholder="admin@nexpride.in"
+                        className="h-14 rounded-2xl font-bold" 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Password</Label>
+                      <Input 
+                        type="password"
+                        value={newAdminData.password}
+                        onChange={(e) => setNewAdminData({...newAdminData, password: e.target.value})}
+                        placeholder="••••••••"
+                        className="h-14 rounded-2xl font-bold" 
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-slate-500">Date of Birth</Label>
+                      <Input 
+                        type="date"
+                        value={newAdminData.dob}
+                        onChange={(e) => setNewAdminData({...newAdminData, dob: e.target.value})}
+                        className="h-14 rounded-2xl font-bold" 
+                        required
+                      />
+                    </div>
+                    <Button type="submit" disabled={isAdminCreating} className="w-full h-14 bg-destructive hover:bg-destructive/90 text-white font-black rounded-2xl shadow-lg mt-4">
+                      {isAdminCreating ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Plus className="w-5 h-5 mr-2" />}
+                      {isAdminCreating ? "Creating..." : "Create Admin Account"}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
             </TabsContent>
