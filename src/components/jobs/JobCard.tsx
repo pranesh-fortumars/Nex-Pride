@@ -56,8 +56,7 @@ export function JobCard({ job, isApplied = false }: JobCardProps) {
 
   return (
     <div className={cn(
-      "group flex flex-col justify-between bg-white rounded-2xl md:rounded-[24px] border border-slate-100 md:hover:border-slate-200 shadow-sm md:hover:shadow-xl md:hover:shadow-slate-200/50 transition-all duration-300 overflow-hidden relative",
-      isInterviewPassed && "opacity-60 bg-slate-50/50"
+      "group flex flex-col justify-between bg-white rounded-2xl md:rounded-[24px] border border-slate-100 md:hover:border-slate-200 shadow-sm md:hover:shadow-xl md:hover:shadow-slate-200/50 transition-all duration-300 overflow-hidden relative"
     )}>
       <Link href={`/jobs/${job.jobId}`} className="absolute inset-0 z-0" />
       
@@ -65,8 +64,7 @@ export function JobCard({ job, isApplied = false }: JobCardProps) {
       <div className="p-3 md:p-6 pb-0 md:pb-6 relative z-10 pointer-events-none">
         <div className="flex justify-between items-start gap-2 md:gap-4 mb-2 md:mb-4">
           <div className={cn(
-            "w-8 h-8 md:w-14 md:h-14 rounded-lg md:rounded-2xl bg-slate-50 flex items-center justify-center text-[#7C3AED] font-black text-xs md:text-lg border border-slate-100 overflow-hidden shrink-0",
-            isInterviewPassed && "grayscale opacity-70"
+            "w-8 h-8 md:w-14 md:h-14 rounded-lg md:rounded-2xl bg-slate-50 flex items-center justify-center text-[#7C3AED] font-black text-xs md:text-lg border border-slate-100 overflow-hidden shrink-0"
           )}>
             {job.companyLogo ? (
               <img src={job.companyLogo} alt={job.companyName} className="w-full h-full object-cover" />
@@ -91,33 +89,30 @@ export function JobCard({ job, isApplied = false }: JobCardProps) {
         </div>
 
         <div>
-          <h3 className={cn(
-            "text-sm md:text-xl font-black text-slate-900 md:group-hover:text-[#7C3AED] transition-colors line-clamp-2 leading-tight",
-            isInterviewPassed && "text-slate-500 md:group-hover:text-slate-600"
-          )}>
+          <h3 className="text-sm md:text-xl font-black text-slate-900 md:group-hover:text-[#7C3AED] transition-colors line-clamp-2 leading-tight">
             {job.jobTitle}
           </h3>
           <div className="flex flex-wrap items-center gap-1 md:gap-1.5 text-slate-500 text-[10px] md:text-sm font-semibold mt-1.5 md:mt-2">
              <span className="truncate max-w-full">{job.companyName}</span>
              <span className="text-slate-300 hidden md:inline">&bull;</span>
-             <span className={cn("text-[#7C3AED] hidden sm:inline", isInterviewPassed && "text-slate-400")}>{translatedCategory}</span>
+             <span className="text-[#7C3AED] hidden sm:inline">{translatedCategory}</span>
              <span className="text-slate-300 hidden sm:inline">&bull;</span>
-             <span className={cn("text-emerald-600 flex items-center gap-0.5 md:gap-1", isInterviewPassed && "text-slate-400")}>✦ Inclusive</span>
+             <span className="text-emerald-600 flex items-center gap-0.5 md:gap-1">✦ Inclusive</span>
           </div>
         </div>
 
         {/* Clean Metadata Section */}
         <div className="flex flex-col gap-0.5 md:gap-2 mt-2 md:mt-6">
-          <p className={cn("text-xs md:text-[15px] font-black text-slate-900", isInterviewPassed && "text-slate-500")}>
+          <p className="text-xs md:text-[15px] font-black text-slate-900">
             ₹{Math.round(job.salaryMin/1000)}k – {Math.round(job.salaryMax/1000)}k
           </p>
-          <p className={cn("hidden md:block text-xs md:text-sm font-semibold text-slate-500", isInterviewPassed && "text-slate-400")}>
+          <p className="hidden md:block text-xs md:text-sm font-semibold text-slate-500">
             {job.experienceRequired !== undefined ? `${job.experienceRequired}+ Years` : "Fresher Friendly"}
           </p>
-          <p className={cn("hidden md:block text-xs md:text-sm font-semibold text-slate-500", isInterviewPassed && "text-slate-400")}>
+          <p className="hidden md:block text-xs md:text-sm font-semibold text-slate-500">
             {job.shiftTiming || "Flexible Timing"}
           </p>
-          <p className={cn("text-[10px] md:text-sm font-semibold text-slate-500 flex items-center gap-1 md:gap-1.5 mt-0.5 md:mt-1 truncate", isInterviewPassed && "text-slate-400")}>
+          <p className="text-[10px] md:text-sm font-semibold text-slate-500 flex items-center gap-1 md:gap-1.5 mt-0.5 md:mt-1 truncate">
              <MapPin className="w-3 h-3 md:w-4 md:h-4 text-slate-400 shrink-0" /> {t.locations[job.location as keyof typeof t.locations] || job.location}
           </p>
         </div>
@@ -131,10 +126,7 @@ export function JobCard({ job, isApplied = false }: JobCardProps) {
           </div>
         ) : (
           <div className="block w-full">
-            <div className={cn(
-              "w-full h-8 md:h-12 flex items-center justify-between px-2.5 md:px-6 bg-slate-50 md:hover:bg-[#7C3AED] text-slate-700 md:hover:text-white font-bold rounded-lg md:rounded-xl transition-all group/btn text-xs md:text-base cursor-pointer pointer-events-auto",
-              isInterviewPassed && "bg-slate-100 text-slate-400 md:hover:bg-slate-200 md:hover:text-slate-600"
-            )}
+            <div className="w-full h-8 md:h-12 flex items-center justify-between px-2.5 md:px-6 bg-slate-50 md:hover:bg-[#7C3AED] text-slate-700 md:hover:text-white font-bold rounded-lg md:rounded-xl transition-all group/btn text-xs md:text-base cursor-pointer pointer-events-auto"
                  onClick={() => window.location.href = `/jobs/${job.jobId}`}
             >
               <span>View Details</span>
