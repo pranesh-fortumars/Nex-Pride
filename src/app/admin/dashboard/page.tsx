@@ -241,7 +241,7 @@ export default function AdminDashboard() {
     return false;
   }, [selectedJob, selectedJobEmployer]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState("profile");
   const [reportFilter, setReportFilter] = useState("all");
 
   const [isDesignationDialogOpen, setIsDesignationDialogOpen] = useState(false);
@@ -1019,6 +1019,8 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="bg-muted p-1 h-14 w-full overflow-x-auto justify-start">
+              <TabsTrigger value="profile" className="px-6 font-bold h-12 shrink-0">My Profile</TabsTrigger>
+              <TabsTrigger value="manage-admins" className="px-6 font-bold h-12 shrink-0">Manage Admins</TabsTrigger>
               <TabsTrigger value="pending" className="px-6 font-bold h-12 flex items-center gap-1.5 shrink-0">
                 Verify Companies ({stats.pendingVerification})
                 {stats.pendingVerification > 0 && (
@@ -1043,8 +1045,6 @@ export default function AdminDashboard() {
               <TabsTrigger value="dues" className="px-6 font-bold h-12 shrink-0">Upcoming Dues</TabsTrigger>
               <TabsTrigger value="designations" className="px-6 font-bold h-12 shrink-0">Designations</TabsTrigger>
               <TabsTrigger value="settings" className="px-6 font-bold h-12 shrink-0">Settings</TabsTrigger>
-              <TabsTrigger value="profile" className="px-6 font-bold h-12 shrink-0">My Profile</TabsTrigger>
-              <TabsTrigger value="manage-admins" className="px-6 font-bold h-12 shrink-0">Manage Admins</TabsTrigger>
             </TabsList>
             
             <TabsContent value="jobs-queue" className="mt-6">
