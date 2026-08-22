@@ -1,0 +1,154 @@
+# NexPride Platform - Complete User Documentation
+
+Welcome to the NexPride User Documentation. This guide covers the complete end-to-end functionality of the platform across all three user roles: **Job Seekers**, **Employers (Factories)**, and **Administrators**.
+
+---
+
+## 🌟 Pros and Benefits of the Application
+
+The NexPride platform is built to solve critical hiring challenges in the textile industry. Key advantages include:
+1. **Targeted for the Textile Industry**: Custom-built with industry-specific categories, departments, and designations (e.g., Sewing, Merchandising, Cutting), eliminating the clutter of generic job boards.
+2. **Mobile-First & Multilingual Support**: Ensures blue-collar workers and non-technical users can easily navigate the app in their regional language directly from their smartphones.
+3. **High Security & Trust**: A robust Admin verification process ensures only legitimate, registered factories can post jobs, preventing scams and fake recruiters.
+4. **Transparent Communication**: Direct calling and WhatsApp integration allow employers and candidates to connect instantly without friction.
+5. **Streamlined Hiring Workflow**: Employers can easily track candidate statuses (Shortlist, Hire, Reject) and archive jobs once filled, keeping their dashboard clean and organized.
+6. **Detailed Job Insights**: Seekers get granular details about perks (Tea cash, free food, hostel, ESI/EPF) upfront, leading to higher retention rates.
+
+---
+
+## 1. Getting Started: Authentication (Login & Signup)
+
+The platform provides a secure and unified authentication system.
+
+### 1.1 Sign Up
+- **Flow**: Users choose their role upon sign-up: "I am looking for a job" (Seeker) or "I want to hire" (Employer).
+- **Credentials**: Users can sign up using their Phone Number + OTP (if supported) or Email + Password.
+- **Onboarding**: After signing up, users are immediately taken to their respective onboarding screens to complete their profile setup.
+
+### 1.2 Login
+- **Flow**: Existing users can log in using their registered Email/Password or Phone/OTP.
+- **Role Redirection**: Based on the assigned role in the system, users are automatically routed to their specific dashboard:
+  - Seekers → Home Page / Job Search
+  - Employers → Employer Dashboard
+  - Admins → Admin Dashboard
+
+---
+
+## 2. Job Seeker Module (For Workers & Staff)
+
+This module is designed for individuals looking for jobs in the textile industry.
+
+### 2.1 The Home Page
+- **Search & Filter**: A comprehensive search bar allows seekers to search for jobs by title, location, and department.
+- **Categories**: Quick links to browse jobs by major categories (e.g., Merchandising, Sewing, HR, Production).
+- **Latest Opportunities**: Displays a list of currently active jobs. (Note: Jobs with expired interview dates or closed statuses are hidden to ensure only relevant opportunities are shown).
+
+### 2.2 Digital Resume (Profile)
+Seekers must build their profile before applying to jobs.
+- **Personal Details**: Name, Phone, Email, Address, Date of Birth.
+- **Professional Details**: Total experience, current role, and core skills.
+- **Preferences**: Preferred work location, expected salary, and shift timing preferences.
+- **Documents**: Upload profile picture and government ID proofs.
+
+### 2.3 Finding and Applying for Jobs
+- **Job Search Page (/jobs)**: Seekers can filter open positions by location, experience required, and job type.
+- **Job Details Page**: Provides comprehensive information including:
+  - Job Title, Company Name, Location.
+  - Salary range and payout schedule (Daily/Weekly/Monthly).
+  - Perks and Benefits (e.g., ESI/EPF, Free Food, Transport, Hostel).
+  - Interview dates and timings.
+- **Applying**: Seekers can apply directly via the "Apply Now" button.
+  - *Note*: If the interview date has passed, the button becomes disabled and reads "🔒 Interview Passed".
+
+### 2.4 Application Tracking
+- Seekers can track their job applications. Statuses include:
+  - **Applied**: Sent to employer.
+  - **Shortlisted**: Employer has reviewed and is interested.
+  - **Hired**: Seeker got the job.
+  - **Rejected**: Application was unsuccessful.
+
+---
+
+## 3. Employer Module (For Factories & Companies)
+
+This module allows factories to post jobs, manage applications, and hire workers.
+
+### 3.1 Factory Profile & Verification
+Employers must be verified by an Admin before their jobs go live.
+- **Company Details**: Company Name, Industry, Size, Founded Year, and Description.
+- **Verification Proof**:
+  - **GST Registration**: Must provide a valid GST number.
+  - **Entrance Proof**: Upload photos of the factory gate/outside.
+  - **Inside Photos**: Upload photos of the workspace to build trust with candidates.
+- **Status**: Will show as `PENDING` until an Admin approves the profile, at which point it becomes `APPROVED`.
+
+### 3.2 Employer Dashboard
+The central hub for employers to manage hiring.
+- **Metrics Overview**: View total active jobs, total applications received, and hired candidates.
+- **Post a Job**: Create a new job listing.
+  - Set Job Title, Department, Openings.
+  - Set Salary, Work Type, Shift Timings, Benefits.
+  - **Crucial**: Set Interview Start and End dates to let candidates know when to walk in.
+- **Job Management**:
+  - View all posted jobs.
+  - **Close/Archive Jobs**: If a position is filled, employers can close or archive the job (must provide a reason). Archived jobs will stop receiving new applications.
+- **Candidate Management**:
+  - View applications for each job.
+  - Review Seeker profiles (skills, experience, location).
+  - Update candidate status (Shortlist, Hire, Reject).
+  - Call or message candidates directly from the dashboard.
+
+---
+
+## 4. Admin Module (Platform Administration)
+
+The Super Admin dashboard provides complete control over the platform's ecosystem, ensuring safety, compliance, and quality.
+
+### 4.1 Dashboard Overview & Metrics
+- Real-time statistics on total factories, workers, jobs posted, and active reports.
+
+### 4.2 Verify Companies (Factory Approval)
+- Admins review all new Employer registrations.
+- They can inspect GST details, location, contact info, and uploaded photos.
+- **Actions**:
+  - `Approve`: Allows the employer's jobs to go live.
+  - `Reject`: Denies the employer access if credentials are fake.
+  - `Mark as Trusted`: Gives the company a special "Trusted" badge for high reliability.
+
+### 4.3 Job Approvals (Content Moderation)
+- All new job postings require Admin approval before appearing on the public search.
+- Admins ensure the salary, description, and benefits comply with platform standards.
+- If an employer is not yet verified, the system warns the admin that the employer must be approved first.
+
+### 4.4 Job Performance & Analytics
+- View detailed analytics for specific jobs (views, reach, application conversion rates).
+- See a list of which registered users viewed a specific job.
+
+### 4.5 Safety Center (Reports)
+- If a user (Seeker or Employer) reports a profile for being fake, abusive, or suspicious, it appears here.
+- Admins can review the report description and uploaded screenshot evidence.
+- Actions include dismissing the report or blocking/suspending the offending account.
+
+### 4.6 Designations & Settings
+- **Designations**: Manage the predefined dropdown list of job titles and departments that employers can choose from when posting jobs.
+- **Settings**: Manage global platform configurations (e.g., Support contact details, hours of operation).
+
+### 4.7 My Profile & Manage Admins
+- **My Profile**: Admins can update their Full Name and Date of Birth.
+- **Manage Admins**: Super Admins can securely provision new administrator accounts.
+  - Requires inputting the new admin's Name, Email, Password, and DOB.
+  - The system creates the account securely in the background without interrupting the active admin session.
+
+---
+
+## 5. Global Features
+
+### 5.1 Multilingual Support
+- The platform includes a language toggle (e.g., English / Tamil), ensuring that factory workers can navigate the app in their native language comfortably.
+
+### 5.2 Responsive Design
+- The entire platform is built with a mobile-first approach, meaning all dashboards, resumes, and search pages work seamlessly on smartphones, which are the primary devices used by job seekers.
+
+### 5.3 Notifications & Support
+- Users receive real-time UI toasts for success and error actions.
+- A dedicated support page allows users to contact the platform's help desk via WhatsApp, Phone, or Email based on the Admin settings.
