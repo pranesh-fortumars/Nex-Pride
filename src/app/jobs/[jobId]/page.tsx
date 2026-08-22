@@ -459,6 +459,10 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                     <Button disabled className="h-14 px-8 bg-slate-200 text-slate-500 font-bold text-lg rounded-xl flex items-center gap-2 shadow-sm">
                       <Lock className="w-6 h-6" /> Job Closed
                     </Button>
+                  ) : isInterviewPassed ? (
+                    <Button disabled className="h-14 px-8 bg-slate-200 text-slate-500 font-bold text-lg rounded-xl flex items-center gap-2 shadow-sm">
+                      <Lock className="w-6 h-6" /> Interview Passed
+                    </Button>
                   ) : (
                     <Button disabled={applying || job.status !== 'approved'} onClick={handleApply} className="h-14 px-8 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-lg rounded-xl shadow-[0_8px_20px_-8px_rgba(124,58,237,0.5)] flex items-center gap-2 transition-all hover:-translate-y-0.5">
                       {applying ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Express Interest <ArrowRight className="w-5 h-5" /></>}
@@ -482,7 +486,7 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                      <div className={cn("w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0", isInterviewPassed ? "bg-slate-100 text-slate-400" : "bg-emerald-50 text-emerald-500")}><IndianRupee className="w-4 h-4 md:w-5 md:h-5" /></div>
                      <div>
                        <p className={cn("text-[10px] md:text-xs font-bold uppercase tracking-widest", isInterviewPassed ? "text-slate-400" : "text-slate-500")}>Salary</p>
-                       <p className={cn("text-base md:text-lg font-black mt-0.5 truncate", isInterviewPassed ? "text-slate-400 line-through" : "text-slate-900")}>₹{job.salaryMin?.toLocaleString()} - ₹{job.salaryMax?.toLocaleString()}</p>
+                       <p className={cn("text-base md:text-lg font-black mt-0.5 truncate", isInterviewPassed ? "text-slate-400" : "text-slate-900")}>₹{job.salaryMin?.toLocaleString()} - ₹{job.salaryMax?.toLocaleString()}</p>
                      </div>
                    </div>
 

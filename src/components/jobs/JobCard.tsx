@@ -93,7 +93,7 @@ export function JobCard({ job, isApplied = false }: JobCardProps) {
         <div>
           <h3 className={cn(
             "text-sm md:text-xl font-black text-slate-900 md:group-hover:text-[#7C3AED] transition-colors line-clamp-2 leading-tight",
-            isInterviewPassed && "text-slate-500 line-through md:group-hover:text-slate-600"
+            isInterviewPassed && "text-slate-500 md:group-hover:text-slate-600"
           )}>
             {job.jobTitle}
           </h3>
@@ -108,7 +108,7 @@ export function JobCard({ job, isApplied = false }: JobCardProps) {
 
         {/* Clean Metadata Section */}
         <div className="flex flex-col gap-0.5 md:gap-2 mt-2 md:mt-6">
-          <p className={cn("text-xs md:text-[15px] font-black text-slate-900", isInterviewPassed && "text-slate-400 line-through")}>
+          <p className={cn("text-xs md:text-[15px] font-black text-slate-900", isInterviewPassed && "text-slate-500")}>
             ₹{Math.round(job.salaryMin/1000)}k – {Math.round(job.salaryMax/1000)}k
           </p>
           <p className={cn("hidden md:block text-xs md:text-sm font-semibold text-slate-500", isInterviewPassed && "text-slate-400")}>
