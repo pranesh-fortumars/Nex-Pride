@@ -187,10 +187,10 @@ export default function Home() {
       }
     };
 
-    return [...liveJobs].sort((a, b) => {
-      const compA = isCompleted(a) ? 1 : 0;
-      const compB = isCompleted(b) ? 1 : 0;
-      if (compA !== compB) return compA - compB;
+    // Filter out completed jobs so they don't show on the home page
+    const activeJobs = liveJobs.filter(job => !isCompleted(job));
+
+    return activeJobs.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
       return dateB - dateA;
