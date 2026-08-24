@@ -519,7 +519,7 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
 
                    {/* Vacancies */}
                    <div className={cn("flex-1 px-4 py-4 md:px-8 md:py-0 flex items-center gap-4 justify-start transition-opacity", isInterviewPassed && "opacity-40 grayscale-[50%]")}>
-                     <div className={cn("w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0", isInterviewPassed ? "bg-slate-100 text-slate-400" : "bg-purple-50 text-purple-500")}><Users className="w-4 h-4 md:w-5 md:h-5" /></div>
+                     <div className={cn("w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0", isInterviewPassed ? "bg-slate-100 text-slate-400" : "bg-[#eaf1f9] text-[#173b6c]")}><Users className="w-4 h-4 md:w-5 md:h-5" /></div>
                      <div>
                        <p className={cn("text-[10px] md:text-xs font-bold uppercase tracking-widest", isInterviewPassed ? "text-slate-400" : "text-slate-500")}>Vacancies</p>
                        <p className={cn("text-base md:text-lg font-black mt-0.5 truncate", isInterviewPassed ? "text-slate-400" : "text-slate-900")}>{job.openings} Openings</p>
