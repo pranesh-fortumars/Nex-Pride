@@ -464,7 +464,7 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                       <Lock className="w-6 h-6" /> Interview Passed
                     </Button>
                   ) : (
-                    <Button disabled={applying || job.status !== 'approved'} onClick={handleApply} className="h-14 px-8 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-lg rounded-xl shadow-[0_8px_20px_-8px_rgba(124,58,237,0.5)] flex items-center gap-2 transition-all hover:-translate-y-0.5">
+                    <Button disabled={applying || job.status !== 'approved'} onClick={handleApply} className="h-14 px-8 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-lg rounded-xl shadow-[0_8px_20px_-8px_rgba(124,58,237,0.5)] flex items-center gap-2 transition-all hover:-translate-y-0.5">
                       {applying ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Express Interest <ArrowRight className="w-5 h-5" /></>}
                     </Button>
                   )}
@@ -519,7 +519,7 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
 
                    {/* Vacancies */}
                    <div className={cn("flex-1 px-4 py-4 md:px-8 md:py-0 flex items-center gap-4 justify-start transition-opacity", isInterviewPassed && "opacity-40 grayscale-[50%]")}>
-                     <div className={cn("w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0", isInterviewPassed ? "bg-slate-100 text-slate-400" : "bg-[#eaf1f9] text-[#173b6c]")}><Users className="w-4 h-4 md:w-5 md:h-5" /></div>
+                     <div className={cn("w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0", isInterviewPassed ? "bg-slate-100 text-slate-400" : "bg-brand-secondarySoft text-brand-secondary")}><Users className="w-4 h-4 md:w-5 md:h-5" /></div>
                      <div>
                        <p className={cn("text-[10px] md:text-xs font-bold uppercase tracking-widest", isInterviewPassed ? "text-slate-400" : "text-slate-500")}>Vacancies</p>
                        <p className={cn("text-base md:text-lg font-black mt-0.5 truncate", isInterviewPassed ? "text-slate-400" : "text-slate-900")}>{job.openings} Openings</p>
@@ -572,7 +572,7 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                         const colSpanClass = isWide ? 'col-span-3' : 'col-span-2';
                         return (
                         <div key={benefit.id} className={`bg-white rounded-[16px] md:rounded-[20px] p-3 md:p-5 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-2 md:gap-4 hover:-translate-y-1 hover:shadow-md transition-all group cursor-default ${colSpanClass}`}>
-                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-[12px] md:rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-[#7C3AED] group-hover:text-white transition-colors">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-[12px] md:rounded-2xl bg-slate-50 text-slate-500 flex items-center justify-center shrink-0 group-hover:bg-brand-primary group-hover:text-white transition-colors">
                             {benefit.icon}
                           </div>
                           <div>
@@ -658,7 +658,7 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                              <Lock className="w-5 h-5 mr-2" /> Job Closed
                           </Button>
                        ) : (
-                          <Button disabled={applying || job.status !== 'approved'} onClick={handleApply} className="w-full h-14 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-lg rounded-xl shadow-lg shadow-[#7C3AED]/20 transition-all hover:-translate-y-0.5">
+                          <Button disabled={applying || job.status !== 'approved'} onClick={handleApply} className="w-full h-14 bg-brand-primary hover:bg-brand-primaryDark text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-primary/20 transition-all hover:-translate-y-0.5">
                              {applying ? <Loader2 className="w-5 h-5 animate-spin" /> : "Apply Now"}
                           </Button>
                        )}
@@ -730,7 +730,7 @@ export default function JobDetailsPage(props: { params: Promise<{ jobId: string 
                     <div className="text-center w-full">
                       <h3 className="text-lg font-black text-slate-900">{job.companyName || "Confidential Employer"}</h3>
                       <p className="text-xs font-semibold text-slate-500 mt-0.5">{job.department || "Verified Employer"}</p>
-                      <p className="text-[13px] text-slate-600 mt-3 leading-relaxed">
+                      <p className="text-slate-600 mt-3 leading-relaxed">
                         {company?.description || "A verified employer offering opportunities on the platform. Join us to be part of an inclusive and dynamic workspace."}
                       </p>
                       <Link href={`/company/${job.employerId}`} className="inline-block mt-4 w-full">
