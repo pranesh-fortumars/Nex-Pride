@@ -1,11 +1,12 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
@@ -98,6 +99,16 @@ export default function EmployerDashboard() {
 
   // Notification States & Query
   const [openNotifications, setOpenNotifications] = useState(false);
+  const router = useRouter(); // Added router for redirects
+
+  // Check for profile completion
+  useEffect(() => {
+    if (!profileLoading && userProfile) {
+      if (!userProfile.profileSubmitted && !userProfile.gst && userProfile.status !== 'approved') {
+        router.push('/employer/profile');
+      }
+    }
+  }, [userProfile, profileLoading, router]);
 
   const notificationsQuery = useMemo(() => {
     if (!user) return null;
@@ -372,6 +383,31 @@ export default function EmployerDashboard() {
     );
   }
 
+  // Pending Admin Approval Lockout (only for new flow profiles to preserve existing)
+  if (userProfile?.status === 'pending' && userProfile?.profileSubmitted) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center p-4">
+          <Card className="max-w-md w-full rounded-[2.5rem] border-none shadow-2xl p-10 text-center space-y-6 bg-amber-50/50 backdrop-blur-sm border border-amber-100">
+            <div className="w-20 h-20 bg-amber-100 rounded-3xl flex items-center justify-center mx-auto text-amber-600 shadow-inner">
+              <ShieldCheck className="w-10 h-10 animate-pulse" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-amber-600 font-headline">Verification in Progress</h2>
+              <p className="text-sm font-semibold text-slate-500 leading-relaxed">
+                Your factory profile is currently being reviewed by our Admin team. This usually takes 24-48 hours.
+              </p>
+            </div>
+            <div className="bg-white/60 p-4 rounded-xl border text-xs font-bold text-slate-500">
+              You will be able to post jobs and view candidates once your profile is approved.
+            </div>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -392,6 +428,12 @@ export default function EmployerDashboard() {
               />
             </div>
             
+            {userProfile?.status === 'approved' && (
+              <Button onClick={() => router.push('/employer/post-job')} className="h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold px-6 shadow-md shadow-primary/20 transition-all">
+                Post Job
+              </Button>
+            )}
+
             <Dialog open={openNotifications} onOpenChange={setOpenNotifications}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="icon" className="h-11 w-11 relative rounded-xl border-primary/20 text-primary hover:bg-primary/5 transition-all active:scale-95 shrink-0">
