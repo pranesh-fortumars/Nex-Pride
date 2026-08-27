@@ -120,6 +120,8 @@ export default function PostJobPage() {
   const [gender, setGender] = useState("any");
   const [workType, setWorkType] = useState("Full-time");
   
+  // Compensation State
+  const [salaryDetails, setSalaryDetails] = useState("Display Salary Range");
   const [salaryBasis, setSalaryBasis] = useState("monthly");
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
@@ -134,7 +136,8 @@ export default function PostJobPage() {
   const [isLocating, setIsLocating] = useState(false);
   const [coords, setCoords] = useState<{lat: number, lng: number} | null>(null);
 
-  // Interview State
+  // Interview & Scheduling State
+  const [expectedClosureDate, setExpectedClosureDate] = useState<Date | undefined>();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [interviewTimings, setInterviewTimings] = useState("");
 
@@ -233,6 +236,8 @@ export default function PostJobPage() {
       shiftTiming: timing,
       description,
       benefits,
+      salaryDetails,
+      expectedClosureDate: expectedClosureDate?.toISOString() || null,
       interviewStartDate: dateRange?.from?.toISOString() || null,
       interviewEndDate: dateRange?.to?.toISOString() || null,
       interviewTimings: interviewTimings || null,
@@ -303,66 +308,96 @@ export default function PostJobPage() {
               <CardTitle className="text-3xl font-extrabold text-primary">{t.postJobNow}</CardTitle>
             </CardHeader>
             <CardContent className="pt-12 px-8 space-y-12">
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase text-muted-foreground">{t.categoryLabel}</Label>
-                  <Select value={category} onValueChange={(v: any) => { setCategory(v); setDepartment(""); setDesignation(""); }}>
-                    <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Staff">{t.staff}</SelectItem>
-                      <SelectItem value="Worker">{t.worker}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase text-muted-foreground">{t.departmentLabel}</Label>
-                  <Select value={department} onValueChange={setDepartment}>
-                    <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue placeholder="Select Department" /></SelectTrigger>
-                    <SelectContent>
-                      {departments.map(d => <SelectItem key={d} value={d}>{(t.departments as any)[d] || d}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase text-muted-foreground">{t.designationLabel}</Label>
-                  <Select value={designation} onValueChange={setDesignation}>
-                    <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue placeholder="Select Role" /></SelectTrigger>
-                    <SelectContent>
-                      {designations.map(d => <SelectItem key={d} value={d}>{(t.designations as any)[d] || d}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                 <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-primary flex items-center gap-2 border-b pb-2"><Briefcase className="w-5 h-5" /> Basic Details</h3>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="font-bold text-xs uppercase text-muted-foreground">{t.openingsLabel}</Label>
-                          <Input type="number" value={openings} onChange={e => setOpenings(e.target.value)} className="h-12 rounded-xl font-bold" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="font-bold text-xs uppercase text-muted-foreground">{t.maxExperience}</Label>
-                          <Input type="number" value={experience} onChange={e => setExperience(e.target.value)} className="h-12 rounded-xl font-bold" />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="font-bold text-xs uppercase text-muted-foreground">{t.genderLabel}</Label>
-                        <RadioGroup value={gender} onValueChange={setGender} className="flex gap-4">
-                          <div className="flex items-center space-x-2"><RadioGroupItem value="any" id="g-any" /><Label htmlFor="g-any" className="cursor-pointer">{t.anyGender}</Label></div>
-                          <div className="flex items-center space-x-2"><RadioGroupItem value="male" id="g-male" /><Label htmlFor="g-male" className="cursor-pointer">{t.maleOnly}</Label></div>
-                          <div className="flex items-center space-x-2"><RadioGroupItem value="female" id="g-female" /><Label htmlFor="g-female" className="cursor-pointer">{t.femaleOnly}</Label></div>
-                        </RadioGroup>
-                      </div>
-                    </div>
+               <div className="space-y-6">
+                 <h3 className="text-lg font-bold text-primary flex items-center gap-2 border-b pb-2"><Briefcase className="w-5 h-5" /> Identity & Quota</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label className="font-bold text-xs uppercase text-muted-foreground">{t.categoryLabel}</Label>
+                    <Select value={category} onValueChange={(v: any) => { setCategory(v); setDepartment(""); setDesignation(""); }}>
+                      <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Staff">{t.staff}</SelectItem>
+                        <SelectItem value="Worker">{t.worker}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-bold text-xs uppercase text-muted-foreground">{t.departmentLabel}</Label>
+                    <Select value={department} onValueChange={setDepartment}>
+                      <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue placeholder="Select Dept" /></SelectTrigger>
+                      <SelectContent>
+                        {departments.map(d => <SelectItem key={d} value={d}>{(t.departments as any)[d] || d}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-bold text-xs uppercase text-muted-foreground">{t.designationLabel}</Label>
+                    <Select value={designation} onValueChange={setDesignation}>
+                      <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue placeholder="Select Role" /></SelectTrigger>
+                      <SelectContent>
+                        {designations.map(d => <SelectItem key={d} value={d}>{(t.designations as any)[d] || d}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                  </div>
 
+                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-muted-foreground">{t.openingsLabel}</Label>
+                      <Input type="number" value={openings} onChange={e => setOpenings(e.target.value)} className="h-12 rounded-xl font-bold" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-muted-foreground">Min Exp (Years)</Label>
+                      <Input type="number" value={experience} onChange={e => setExperience(e.target.value)} className="h-12 rounded-xl font-bold" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-muted-foreground">Gender Preference</Label>
+                      <Select value={gender} onValueChange={setGender}>
+                        <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="any">Any Gender</SelectItem>
+                          <SelectItem value="male">Male Only</SelectItem>
+                          <SelectItem value="female">Female Only</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-xs uppercase text-muted-foreground">Work Type</Label>
+                      <Select value={workType} onValueChange={setWorkType}>
+                        <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Full-time">Full-time</SelectItem>
+                          <SelectItem value="Shift">Shift</SelectItem>
+                          <SelectItem value="Piece Rate">Piece Rate</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                 </div>
+               </div>
+
                  <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-primary flex items-center gap-2 border-b pb-2"><IndianRupee className="w-5 h-5" /> Salary & Payout</h3>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                    <h3 className="text-lg font-bold text-primary flex items-center gap-2 border-b pb-2"><IndianRupee className="w-5 h-5" /> Compensation & Timing</h3>
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label className="font-bold text-xs uppercase text-muted-foreground">Salary Details</Label>
+                        <Select value={salaryDetails} onValueChange={setSalaryDetails}>
+                          <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Display Salary Range">Display Salary Range</SelectItem>
+                            <SelectItem value="Not Disclosed">Not Disclosed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                          <Label className="font-bold text-xs uppercase text-muted-foreground">{t.minSalary}</Label>
+                          <Input type="number" value={salaryMin} onChange={e => setSalaryMin(e.target.value)} placeholder="e.g. 15000" className="h-12 rounded-xl font-bold" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-bold text-xs uppercase text-muted-foreground">{t.maxSalary}</Label>
+                          <Input type="number" value={salaryMax} onChange={e => setSalaryMax(e.target.value)} placeholder="e.g. 20000" className="h-12 rounded-xl font-bold" />
+                        </div>
                         <div className="space-y-2">
                           <Label className="font-bold text-xs uppercase text-muted-foreground">{t.salaryBasis}</Label>
                           <Select value={salaryBasis} onValueChange={setSalaryBasis}>
@@ -378,80 +413,68 @@ export default function PostJobPage() {
                              </SelectContent>
                           </Select>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="font-bold text-xs uppercase text-muted-foreground">{t.payoutTiming}</Label>
-                          <Input value={payoutSchedule} onChange={e => setPayoutSchedule(e.target.value)} placeholder={t.payoutTimingPlaceholder} className="h-12 rounded-xl font-bold" />
-                        </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label className="font-bold text-xs uppercase text-muted-foreground">{t.minSalary}</Label>
-                          <Input type="number" value={salaryMin} onChange={e => setSalaryMin(e.target.value)} placeholder={salaryBasis === 'monthly' ? "₹ 15,000" : "₹ 400"} className="h-12 rounded-xl font-bold" />
+                          <Label className="font-bold text-xs uppercase text-muted-foreground">Payout Schedule</Label>
+                          <Input value={payoutSchedule} onChange={e => setPayoutSchedule(e.target.value)} placeholder="e.g. Weekly on Sat" className="h-12 rounded-xl font-bold" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="font-bold text-xs uppercase text-muted-foreground">{t.maxSalary}</Label>
-                          <Input type="number" value={salaryMax} onChange={e => setSalaryMax(e.target.value)} placeholder={salaryBasis === 'monthly' ? "₹ 25,000" : "₹ 600"} className="h-12 rounded-xl font-bold" />
+                          <Label className="font-bold text-xs uppercase text-muted-foreground">Shift Timings</Label>
+                          <Input value={timing} onChange={e => setTiming(e.target.value)} placeholder="e.g. 9 AM - 6 PM" className="h-12 rounded-xl font-bold" />
                         </div>
                       </div>
                     </div>
                  </div>
-              </div>
 
-              <div className="space-y-6 bg-primary/5 p-8 rounded-[2rem] border-2 border-dashed border-primary/20">
-                <h3 className="text-xl font-black text-primary flex items-center gap-2"><CalendarIcon className="w-6 h-6" /> {t.interviewSchedule}</h3>
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-primary flex items-center gap-2 border-b pb-2"><CalendarIcon className="w-5 h-5" /> Logistics & Scheduling</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
-                    <Label className="font-bold text-xs uppercase text-muted-foreground">{t.interviewDates}</Label>
+                    <div className="flex justify-between items-center">
+                      <Label className="font-bold text-xs uppercase text-muted-foreground">Residing Area</Label>
+                      <button type="button" onClick={handleGetLocation} className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                        {isLocating ? <Loader2 className="w-3 h-3 animate-spin" /> : <LocateFixed className="w-3 h-3" />} Capture GPS
+                      </button>
+                    </div>
+                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Avinashi, Tirupur" className="h-12 rounded-xl font-bold" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-bold text-xs uppercase text-orange-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Expected Listing Closure
+                    </Label>
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-full h-12 justify-start text-left font-bold rounded-xl bg-white", !dateRange && "text-muted-foreground")}>
+                        <Button variant="outline" className={cn("w-full h-12 justify-start text-left font-bold rounded-xl bg-white", !expectedClosureDate && "text-muted-foreground")}>
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {dateRange?.from ? (dateRange.to ? `${format(dateRange.from, "LLL dd")} - ${format(dateRange.to, "LLL dd, y")}` : format(dateRange.from, "LLL dd, y")) : <span>{t.selectDateRange}</span>}
+                          {expectedClosureDate ? format(expectedClosureDate, "LLL dd, y") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl" align="start">
-                        <Calendar initialFocus mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} fromDate={new Date()} />
+                        <Calendar initialFocus mode="single" selected={expectedClosureDate} onSelect={setExpectedClosureDate} />
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="font-bold text-xs uppercase text-muted-foreground">{t.interviewTimings}</Label>
-                    <Input value={interviewTimings} onChange={e => setInterviewTimings(e.target.value)} placeholder={t.timingsPlaceholder} className="h-12 rounded-xl font-bold bg-white" />
-                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-6">
-                <h3 className="text-lg font-bold text-primary flex items-center gap-2 border-b pb-2"><MapPin className="w-5 h-5" /> Logistics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2 md:col-span-2">
-                      <Label className="font-bold text-xs uppercase text-muted-foreground">{t.location}</Label>
-                      <Select value={location} onValueChange={setLocation}>
-                        <SelectTrigger className="h-12 rounded-xl font-bold bg-white"><SelectValue placeholder="Select Location" /></SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(t.locations || {})
-                            .filter(([key]) => key !== 'all')
-                            .map(([key, val]) => (
-                              <SelectItem key={key} value={key} className="font-semibold">{val as string}</SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
+                <div className="bg-primary/5 p-6 rounded-2xl border-2 border-dashed border-primary/20 space-y-4 mt-6">
+                  <Label className="font-bold text-xs uppercase text-primary flex items-center gap-1"><CalendarIcon className="w-3 h-3" /> Interview Drive Window (Max 15 Days)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="font-bold text-[10px] uppercase text-muted-foreground">Drive Start & End Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className={cn("w-full h-12 justify-start text-left font-bold rounded-xl bg-white", !dateRange && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateRange?.from ? (dateRange.to ? `${format(dateRange.from, "LLL dd")} - ${format(dateRange.to, "LLL dd, y")}` : format(dateRange.from, "LLL dd, y")) : <span>Select range</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl" align="start">
+                          <Calendar initialFocus mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} fromDate={new Date()} />
+                        </PopoverContent>
+                      </Popover>
                     </div>
-                  <div className="space-y-2">
-                    <Label className="font-bold text-xs uppercase text-muted-foreground">{t.shiftTimingLabel}</Label>
-                    <Input value={timing} onChange={e => setTiming(e.target.value)} placeholder="9 AM - 7 PM" className="h-12 rounded-xl font-bold" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="font-bold text-xs uppercase text-muted-foreground">{t.workTypeLabel}</Label>
-                    <Select value={workType} onValueChange={setWorkType}>
-                      <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Full-time">Full-time</SelectItem>
-                        <SelectItem value="Shift">Shift</SelectItem>
-                        <SelectItem value="Piece Rate">Piece Rate</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
               </div>
@@ -477,24 +500,33 @@ export default function PostJobPage() {
                  </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase text-muted-foreground">{t.requirements}</Label>
-                <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the job..." className="min-h-[150px] rounded-2xl font-bold" />
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-primary flex items-center gap-2 border-b pb-2"><Briefcase className="w-5 h-5" /> Job Dossier</h3>
+                <div className="space-y-2">
+                  <Label className="font-bold text-xs uppercase text-muted-foreground">Listing Description</Label>
+                  <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the job requirements, daily tasks, etc..." className="min-h-[150px] rounded-2xl font-bold" />
+                </div>
               </div>
             </CardContent>
-            <CardFooter className="p-8 border-t bg-muted/5 flex flex-col gap-4">
+            <CardFooter className="p-8 border-t bg-muted/5 flex flex-col md:flex-row gap-4 items-center">
               {userData?.trustedEmployer && (
-                <div className="w-full bg-green-50 text-green-700 border border-green-200 rounded-xl p-4 flex gap-3 items-center shadow-sm">
+                <div className="w-full bg-green-50 text-green-700 border border-green-200 rounded-xl p-4 flex gap-3 items-center shadow-sm mb-4 md:mb-0">
                   <ShieldCheck className="w-6 h-6 shrink-0 text-green-600" />
                   <div>
                     <p className="font-bold text-sm">Trusted Company Status</p>
-                    <p className="text-xs font-semibold text-green-700/80">Your jobs are auto-approved and will go live instantly without waiting for admin review.</p>
+                    <p className="text-xs font-semibold text-green-700/80">Your jobs are auto-approved.</p>
                   </div>
                 </div>
               )}
-              <Button disabled={loading || availableCredits < 1} type="submit" className="w-full h-14 font-bold bg-primary text-white rounded-2xl shadow-lg text-lg">
-                {loading ? "Posting..." : <><Zap className="w-5 h-5 mr-2" /> {t.postJobNow}</>}
-              </Button>
+              
+              <div className="w-full flex flex-col md:flex-row justify-end gap-4">
+                <Button type="button" variant="outline" className="h-14 font-bold rounded-2xl shadow-sm text-lg w-full md:w-auto px-8">
+                  <Save className="w-5 h-5 mr-2" /> Save as Draft
+                </Button>
+                <Button disabled={loading || availableCredits < 1} type="submit" className="h-14 font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg text-lg w-full md:w-auto px-10">
+                  {loading ? "Processing..." : <><Zap className="w-5 h-5 mr-2" /> Establish Verified Listing</>}
+                </Button>
+              </div>
             </CardFooter>
           </Card>
         </form>
