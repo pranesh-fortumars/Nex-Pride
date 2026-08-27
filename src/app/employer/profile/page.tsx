@@ -14,7 +14,8 @@ import {
   Loader2,
   CheckCircle2,
   AlertTriangle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  User
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -51,6 +52,9 @@ export default function EmployerProfilePage() {
     foundedYear: "",
     headquarters: "",
     description: "",
+    contactPerson: "",
+    designation: "",
+    email: "",
     status: 'pending'
   });
 
@@ -69,18 +73,22 @@ export default function EmployerProfilePage() {
 
   useEffect(() => {
     if (userData) {
+      const draft = userData.draftProfile || {};
       setProfileData({
-        name: userData.name || "",
-        location: userData.location || "",
-        gst: userData.gst || "",
-        photo: userData.photo || "",
-        logo: userData.companyLogo || "",
-        phone: userData.phone || "",
-        industry: userData.industry || "",
-        size: userData.size || "",
-        foundedYear: userData.foundedYear || "",
-        headquarters: userData.headquarters || "",
-        description: userData.description || "",
+        name: draft.name || userData.name || "",
+        location: draft.location || userData.location || "",
+        gst: draft.gst || userData.gst || "",
+        photo: draft.photo || userData.photo || "",
+        logo: draft.logo || userData.companyLogo || "",
+        phone: draft.phone || userData.phone || "",
+        industry: draft.industry || userData.industry || "",
+        size: draft.size || userData.size || "",
+        foundedYear: draft.foundedYear || userData.foundedYear || "",
+        headquarters: draft.headquarters || userData.headquarters || "",
+        description: draft.description || userData.description || "",
+        contactPerson: draft.contactPerson || userData.contactPerson || "",
+        designation: draft.designation || userData.designation || "",
+        email: draft.email || userData.email || "",
         status: userData.status || 'pending'
       });
     } else {
@@ -97,11 +105,29 @@ export default function EmployerProfilePage() {
           foundedYear: localStorage.getItem('sim_user_founded') || "",
           headquarters: localStorage.getItem('sim_user_hq') || "",
           description: localStorage.getItem('sim_user_desc') || "",
+          contactPerson: localStorage.getItem('sim_user_contact_person') || "",
+          designation: localStorage.getItem('sim_user_designation') || "",
+          email: localStorage.getItem('sim_user_email') || "",
           status: localStorage.getItem('sim_user_status') || 'pending'
         });
       }
     }
   }, [userData, isSimSession]);
+
+  // Background Auto-Save
+  useEffect(() => {
+    if (!auth.currentUser || isSimSession || !userRef) return;
+    
+    // Auto-save debouncer
+    const timeoutId = setTimeout(() => {
+      // Prevent saving an empty object before initial load
+      if (profileData.name || profileData.gst || profileData.phone) {
+        updateDoc(userRef, { draftProfile: profileData }).catch(() => {});
+      }
+    }, 2000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [profileData, auth.currentUser, isSimSession, userRef]);
 
   const processImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -262,6 +288,9 @@ export default function EmployerProfilePage() {
       localStorage.setItem('sim_user_founded', profileData.foundedYear);
       localStorage.setItem('sim_user_hq', profileData.headquarters);
       localStorage.setItem('sim_user_desc', profileData.description);
+      localStorage.setItem('sim_user_contact_person', profileData.contactPerson);
+      localStorage.setItem('sim_user_designation', profileData.designation);
+      localStorage.setItem('sim_user_email', profileData.email);
       localStorage.setItem('sim_user_status', newStatus);
       localStorage.setItem('sim_user_profileSubmitted', 'true');
       
@@ -276,6 +305,7 @@ export default function EmployerProfilePage() {
       companyLogo: profileData.logo,
       status: newStatus,
       profileSubmitted: true,
+      draftProfile: null, // Clear draft on actual submission
       updatedAt: serverTimestamp() 
     };
 
@@ -290,7 +320,7 @@ export default function EmployerProfilePage() {
     };
 
     // Compute changed fields if previously approved (re-review flow)
-    const TRACKED_FIELDS = ['name', 'gst', 'location', 'industry', 'size', 'foundedYear', 'headquarters', 'description'];
+    const TRACKED_FIELDS = ['name', 'gst', 'location', 'industry', 'size', 'foundedYear', 'headquarters', 'description', 'contactPerson', 'designation', 'email'];
     const changedFields: { field: string; oldValue: any; newValue: any }[] = [];
     if (wasApproved && userData) {
       for (const field of TRACKED_FIELDS) {
@@ -336,6 +366,9 @@ export default function EmployerProfilePage() {
           foundedYear: userData?.foundedYear ?? '',
           headquarters: userData?.headquarters ?? '',
           description: userData?.description ?? '',
+          contactPerson: userData?.contactPerson ?? '',
+          designation: userData?.designation ?? '',
+          email: userData?.email ?? '',
         },
         newData: {
           name: profileData.name,
@@ -346,6 +379,9 @@ export default function EmployerProfilePage() {
           foundedYear: profileData.foundedYear,
           headquarters: profileData.headquarters,
           description: profileData.description,
+          contactPerson: profileData.contactPerson,
+          designation: profileData.designation,
+          email: profileData.email,
         },
         changedFields,
         status: 'pending',
@@ -570,14 +606,52 @@ export default function EmployerProfilePage() {
                       required
                     />
                   </div>
+                </div>
+
+                {/* SECTION: Management Profile */}
+                <p className="text-sm font-black text-blue-600 flex items-center gap-2 border-b border-slate-100 pb-2 pt-4">
+                  <User className="w-5 h-5" /> Management Profile
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <Label className="font-semibold text-sm text-slate-700">Contact Number <span className="text-red-500">*</span></Label>
+                    <Label className="font-semibold text-sm text-slate-700 uppercase text-xs tracking-wide">Contact Person Name</Label>
+                    <Input
+                      value={profileData.contactPerson}
+                      onChange={e => setProfileData({...profileData, contactPerson: e.target.value})}
+                      className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold text-slate-900 transition-all"
+                      placeholder="e.g. Pranesh S"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold text-sm text-slate-700 uppercase text-xs tracking-wide">Designation</Label>
+                    <Input
+                      value={profileData.designation}
+                      onChange={e => setProfileData({...profileData, designation: e.target.value})}
+                      className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold text-slate-900 transition-all"
+                      placeholder="e.g. Creator"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold text-sm text-slate-700 uppercase text-xs tracking-wide flex items-center gap-1">
+                       Mobile No <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       value={profileData.phone}
                       onChange={e => setProfileData({...profileData, phone: e.target.value})}
-                      className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
-                      placeholder="e.g. +91 9876543210"
+                      className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold text-slate-900 transition-all bg-blue-50/50"
+                      placeholder="e.g. 7604871241"
                       required
+                    />
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">This number is used for industrial verification audits.</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold text-sm text-slate-700 uppercase text-xs tracking-wide">Email Address</Label>
+                    <Input
+                      type="email"
+                      value={profileData.email}
+                      onChange={e => setProfileData({...profileData, email: e.target.value})}
+                      className="h-11 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold text-slate-900 transition-all"
+                      placeholder="e.g. contact@company.com"
                     />
                   </div>
                 </div>
@@ -655,13 +729,32 @@ export default function EmployerProfilePage() {
                 <CheckCircle2 className="w-4 h-4 text-blue-500" />
                 Verified within 24–48 hours
               </div>
-              <Button
-                type="submit"
-                disabled={loading || processing}
-                className="w-full sm:w-auto h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-200 transition-all active:scale-95"
-              >
-                {loading ? "Submitting..." : "Submit for Verification"}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={loading || processing}
+                  onClick={async () => {
+                    if (isSimSession || !userRef) return;
+                    setLoading(true);
+                    try {
+                      await updateDoc(userRef, { draftProfile: profileData });
+                      toast({ title: "Draft Saved", description: "You can safely exit and continue later." });
+                    } catch (e) {}
+                    setLoading(false);
+                  }}
+                  className="w-full sm:w-auto h-11 px-6 font-bold rounded-xl shadow-sm transition-all border-slate-200"
+                >
+                  Save Draft
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || processing}
+                  className="w-full sm:w-auto h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md shadow-blue-200 transition-all active:scale-95"
+                >
+                  {loading ? "Submitting..." : "Submit for Verification"}
+                </Button>
+              </div>
             </div>
           </div>
         </form>
